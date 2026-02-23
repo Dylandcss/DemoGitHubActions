@@ -14,39 +14,32 @@ jobs:
       matrix:
         dotnet-version: ['8.0.x', '10.0.x']
 
-    name: Build with .NET ${{ matrix.dotnet-version }}
+    name: Build avec .NET ${{ matrix.dotnet-version }}
 
     steps:
-      # 1️⃣ Récupération du code
-      - name: Checkout repository
+      - name: Récupération du code source
         uses: actions/checkout@v4
 
-      # 2️⃣ Installation de la version .NET depuis la matrix
-      - name: Setup .NET
+      - name: Installation de la version .NET (stratégie)
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
 
-      # 3️⃣ Restauration des dépendances
-      - name: Restore dependencies
+      - name: Restauration des dépendances
         run: dotnet restore
 
-      # 4️⃣ Compilation
-      - name: Build
+      - name: Compilation
         run: dotnet build --configuration Release --no-restore
 
-      # 5️⃣ Publication
-      - name: Publish
+      - name: Publication
         run: dotnet publish --configuration Release --output ./publish --no-build
 
-      # 6️⃣ Création d'une archive
-      - name: Archive published files
+      - name: Création d'une archive
         run: |
           cd publish
           zip -r ../api-${{ matrix.dotnet-version }}.zip .
 
-      # 7️⃣ Upload des artefacts
-      - name: Upload artifact
+      - name: Upload des artefacts
         uses: actions/upload-artifact@v4
         with:
           name: api-${{ matrix.dotnet-version }}
