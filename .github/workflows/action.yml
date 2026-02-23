@@ -1,0 +1,53 @@
+name: Build & Publish ASP.NET Core API
+
+on:
+  push:
+    branches: [ "main","master" ]
+  pull_request:
+    branches: [ "main","master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        dotnet-version: ['8.0.x', '10.0.x']
+
+    name: Build with .NET ${{ matrix.dotnet-version }}
+
+    steps:
+      # 1️⃣ Récupération du code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ Installation de la version .NET depuis la matrix
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+
+      # 3️⃣ Restauration des dépendances
+      - name: Restore dependencies
+        run: dotnet restore
+
+      # 4️⃣ Compilation
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      # 5️⃣ Publication
+      - name: Publish
+        run: dotnet publish --configuration Release --output ./publish --no-build
+
+      # 6️⃣ Création d'une archive
+      - name: Archive published files
+        run: |
+          cd publish
+          zip -r ../api-${{ matrix.dotnet-version }}.zip .
+
+      # 7️⃣ Upload des artefacts
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-${{ matrix.dotnet-version }}
+          path: api-${{ matrix.dotnet-version }}.zip
